@@ -113,6 +113,29 @@ typedef enum mjs_err {
 } mjs_err_t;
 struct mjs;
 
+
+struct mjs_bcode_part {
+    /* Global index of the bcode part */
+    size_t start_idx;
+
+    /* Actual bcode data */
+    struct {
+        const char *p; /* Memory chunk pointer */
+        size_t len;    /* Memory chunk length */
+    } data;
+
+    /*
+     * Result of evaluation (not parsing: if there is an error during parsing,
+     * the bcode is not even committed). It is used to determine whether we
+     * need to evaluate the file: if file was already evaluated, and the result
+     * was MJS_OK, then we won't evaluate it again. Otherwise, we will.
+     */
+    mjs_err_t exec_res : 4;
+
+    /* If set, bcode data does not need to be freed */
+    unsigned in_rom : 1;
+};
+
 /* Create MJS instance */
 struct mjs *mjs_create();
 
@@ -430,6 +453,29 @@ typedef enum mjs_err {
 } mjs_err_t;
 struct mjs;
 
+
+struct mjs_bcode_part {
+    /* Global index of the bcode part */
+    size_t start_idx;
+
+    /* Actual bcode data */
+    struct {
+        const char *p; /* Memory chunk pointer */
+        size_t len;    /* Memory chunk length */
+    } data;
+
+    /*
+     * Result of evaluation (not parsing: if there is an error during parsing,
+     * the bcode is not even committed). It is used to determine whether we
+     * need to evaluate the file: if file was already evaluated, and the result
+     * was MJS_OK, then we won't evaluate it again. Otherwise, we will.
+     */
+    mjs_err_t exec_res : 4;
+
+    /* If set, bcode data does not need to be freed */
+    unsigned in_rom : 1;
+};
+
 /* Create MJS instance */
 struct mjs *mjs_create();
 
@@ -595,6 +641,35 @@ void mjs_return(struct mjs *mjs, mjs_val_t v);
 #if defined(__cplusplus)
 extern "C" {
 #endif /* __cplusplus */
+
+struct mjs_bcode_part;
+
+struct mjs_stack {
+    int stack_len;
+    int call_stack_len;
+    int arg_stack_len;
+    int scopes_len;
+    int loop_addresses_len;
+};
+
+struct mjs_execution {
+    struct mjs* mjs;
+    struct mjs_stack stack;
+    size_t i;
+    struct mjs_bcode_part bp;
+    uint8_t prev_opcode;
+    uint8_t opcode;
+    int done;
+    size_t start_off;
+    mjs_val_t* res;
+};
+
+/* Initialize execution data structure, which would allow to execute the specified JS code step-by-step. */
+mjs_err_t mjs_start_execution(struct mjs *mjs, struct mjs_execution *exec, const char *src, mjs_val_t *res);
+/* Check if the specified execution is complete (e.g. if it has failed or completed successfully). */
+int mjs_is_execution_done(struct mjs_execution *exec);
+/* Execute next step of the specified execution. If the execution is done, this call will be ignored. */
+mjs_err_t mjs_execute_step(struct mjs_execution *exec);
 
 mjs_err_t mjs_exec(struct mjs *, const char *src, mjs_val_t *res);
 mjs_err_t mjs_exec_buf(struct mjs *, const char *src, size_t, mjs_val_t *res);
