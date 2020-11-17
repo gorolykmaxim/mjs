@@ -963,7 +963,9 @@ mjs_err_t mjs_execute_step(struct mjs_execution* exec) {
     /* Remember result of the evaluation of this bcode part */
     mjs_bcode_part_get_by_offset(mjs, exec->start_off)->exec_res = mjs->error;
 
-    *exec->res = mjs_pop(mjs);
+    if (exec->res != NULL) {
+        *exec->res = mjs_pop(mjs);
+    }
     exec->done = 1;
   }
   return mjs->error;
@@ -1078,7 +1080,6 @@ MJS_PRIVATE mjs_err_t mjs_parse_source(struct mjs *mjs, const char *path, const 
 
 mjs_err_t mjs_start_execution(struct mjs *mjs, struct mjs_execution *exec, const char *src, mjs_val_t *res) {
   size_t off = mjs->bcode_len;
-  mjs_val_t r = MJS_UNDEFINED;
   mjs_err_t err = mjs_parse_source(mjs, "<stdin>", src, 0);
   if (err != MJS_OK) return err;
   mjs_prepare_to_execute(mjs, exec, off, res);
