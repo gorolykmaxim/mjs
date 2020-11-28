@@ -53,6 +53,7 @@ HEADERS = $(COMMON)/mbuf.h \
           mjs_gc.h \
           mjs_internal.h \
           mjs_json.h \
+          mjs_json_public.h \
           mjs_license.h \
           mjs_mm.h \
           mjs_object.h \

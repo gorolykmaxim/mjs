@@ -258,8 +258,7 @@ clean:
   return rcode;
 }
 
-MJS_PRIVATE mjs_err_t mjs_json_stringify(struct mjs *mjs, mjs_val_t v,
-                                         char *buf, size_t size, char **res) {
+mjs_err_t mjs_json_stringify(struct mjs *mjs, mjs_val_t v, char *buf, size_t size, char **res) {
   mjs_err_t rcode = MJS_OK;
   char *p = buf;
   size_t len;
